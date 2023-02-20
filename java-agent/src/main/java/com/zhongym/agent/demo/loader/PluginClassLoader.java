@@ -19,26 +19,16 @@
 package com.zhongym.agent.demo.loader;
 
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+import java.net.URLClassLoader;
+import java.util.*;
 
 /**
- * copy from skywalking AgentClassLoader
- *
  * @author zhongym
  */
-public class PluginClassLoader extends ClassLoader {
+public class PluginClassLoader extends URLClassLoader {
 
     static {
         registerAsParallelCapable();
@@ -49,9 +39,6 @@ public class PluginClassLoader extends ClassLoader {
      */
     private static PluginClassLoader DEFAULT_LOADER;
 
-    private final List<File> pluginDirectories = new LinkedList<>();
-    private List<Jar> allJars;
-    private final ReentrantLock jarScanLock = new ReentrantLock();
 
     public static PluginClassLoader getDefault() {
         return DEFAULT_LOADER;
@@ -71,120 +58,30 @@ public class PluginClassLoader extends ClassLoader {
     }
 
     public PluginClassLoader(ClassLoader parent, List<String> pluginPaths) {
-        super(parent);
-        // 插件目录
+        super(new URL[]{}, parent);
+        this.loadJars(pluginPaths);
+    }
+
+    private void loadJars(List<String> pluginPaths) {
         pluginPaths.forEach(directory -> {
-            pluginDirectories.add(new File(directory));
+            File[] jarFiles = new File(directory).listFiles();
+            if (jarFiles == null) {
+                return;
+            }
+            for (File file : jarFiles) {
+                if (ifJar(file)) {
+                    try {
+                        addURL(file.toURI().toURL());
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(file.getPath(), e);
+                    }
+                }
+            }
         });
     }
 
-    @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
-        List<Jar> allJars = getAllJars();
-        String path = name.replace('.', '/').concat(".class");
-        for (Jar jar : allJars) {
-            JarEntry entry = jar.jarFile.getJarEntry(path);
-            if (entry == null) {
-                continue;
-            }
-            try {
-                URL classFileUrl = new URL("jar:file:" + jar.sourceFile.getAbsolutePath() + "!/" + path);
-                byte[] data;
-                try (final BufferedInputStream inputStream = new BufferedInputStream(classFileUrl.openStream());
-                     final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                    int ch;
-                    while ((ch = inputStream.read()) != -1) {
-                        outputStream.write(ch);
-                    }
-                    data = outputStream.toByteArray();
-                }
-                return defineClass(name, data, 0, data.length);
-            } catch (IOException e) {
-            }
-        }
-        throw new ClassNotFoundException("Can't find " + name);
+    private boolean ifJar(File file) {
+        return file.getPath().toLowerCase().endsWith(".jar");
     }
 
-    @Override
-    protected URL findResource(String name) {
-        List<Jar> allJars = getAllJars();
-        for (Jar jar : allJars) {
-            JarEntry entry = jar.jarFile.getJarEntry(name);
-            if (entry != null) {
-                try {
-                    return new URL("jar:file:" + jar.sourceFile.getAbsolutePath() + "!/" + name);
-                } catch (MalformedURLException ignored) {
-                }
-            }
-        }
-        return null;
-    }
-
-    @Override
-    protected Enumeration<URL> findResources(String name) throws IOException {
-        List<URL> allResources = new LinkedList<>();
-        List<Jar> allJars = getAllJars();
-        for (Jar jar : allJars) {
-            JarEntry entry = jar.jarFile.getJarEntry(name);
-            if (entry != null) {
-                allResources.add(new URL("jar:file:" + jar.sourceFile.getAbsolutePath() + "!/" + name));
-            }
-        }
-
-        final Iterator<URL> iterator = allResources.iterator();
-        return new Enumeration<URL>() {
-            @Override
-            public boolean hasMoreElements() {
-                return iterator.hasNext();
-            }
-
-            @Override
-            public URL nextElement() {
-                return iterator.next();
-            }
-        };
-    }
-
-    private List<Jar> getAllJars() {
-        if (allJars == null) {
-            jarScanLock.lock();
-            try {
-                if (allJars == null) {
-                    allJars = doGetJars();
-                }
-            } finally {
-                jarScanLock.unlock();
-            }
-        }
-
-        return allJars;
-    }
-
-    private LinkedList<Jar> doGetJars() {
-        LinkedList<Jar> jars = new LinkedList<>();
-        for (File path : pluginDirectories) {
-            if (path.exists() && path.isDirectory()) {
-                String[] jarFileNames = path.list((dir, name) -> name.endsWith(".jar"));
-                for (String fileName : jarFileNames) {
-                    try {
-                        File file = new File(path, fileName);
-                        Jar jar = new Jar(new JarFile(file), file);
-                        jars.add(jar);
-                    } catch (IOException e) {
-                    }
-                }
-            }
-        }
-        return jars;
-    }
-
-    private static class Jar {
-        private final JarFile jarFile;
-        private final File sourceFile;
-
-        public Jar(JarFile jarFile, File sourceFile) {
-            this.jarFile = jarFile;
-            this.sourceFile = sourceFile;
-        }
-    }
 }

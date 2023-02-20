@@ -45,7 +45,7 @@ public class EnhanceAdvisorLoader {
             String agentPath = AGENT_PATH == null ? findAgentPath() : AGENT_PATH;
             List<String> pluginPaths = new ArrayList<>();
             for (String path : PLUGIN_DIRECTORY) {
-                pluginPaths.add(agentPath.endsWith(File.separator) ? agentPath : agentPath + File.separator + path);
+                pluginPaths.add(agentPath.endsWith(File.separator) ? agentPath + path : agentPath + File.separator + path);
             }
             return pluginPaths;
         } catch (Exception e) {
@@ -69,6 +69,7 @@ public class EnhanceAdvisorLoader {
                 try {
                     agentJarFile = new File(new URL(urlString).toURI());
                 } catch (MalformedURLException | URISyntaxException e) {
+                    throw new RuntimeException(urlString, e);
                 }
                 if (agentJarFile.exists()) {
                     return agentJarFile.getParentFile().getPath();
