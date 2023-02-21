@@ -3,9 +3,6 @@ package com.zhongym.agent.demo.loader;
 import com.zhongym.agent.code.enhance.EnhanceAdvisor;
 
 import java.io.File;
-import java.io.InvalidClassException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,34 +50,16 @@ public class EnhanceAdvisorLoader {
         }
     }
 
-    private static String findAgentPath() throws Exception {
-        String classResourcePath = EnhanceAdvisorLoader.class.getName().replaceAll("\\.", "/") + ".class";
-
-        URL resource = ClassLoader.getSystemClassLoader().getResource(classResourcePath);
-        if (resource != null) {
-            String urlString = resource.toString();
-
-            int insidePathIndex = urlString.indexOf('!');
-            boolean isInJar = insidePathIndex > -1;
-
-            if (isInJar) {
-                urlString = urlString.substring(urlString.indexOf("file:"), insidePathIndex);
-                File agentJarFile = null;
-                try {
-                    agentJarFile = new File(new URL(urlString).toURI());
-                } catch (MalformedURLException | URISyntaxException e) {
-                    throw new RuntimeException(urlString, e);
-                }
-                if (agentJarFile.exists()) {
-                    return agentJarFile.getParentFile().getPath();
-                }
-            } else {
-                int prefixLength = "file:".length();
-                String classLocation = urlString.substring(
-                        prefixLength, urlString.length() - classResourcePath.length());
-                return classLocation;
-            }
+    /**
+     * 获取java-agent jar所有在目录
+     */
+    private static String findAgentPath() {
+        try {
+            URL location = EnhanceAdvisorLoader.class.getProtectionDomain().getCodeSource().getLocation();
+            String path = location.toURI().getSchemeSpecificPart();
+            return path.substring(0, path.lastIndexOf(File.separator) + 1);
+        } catch (Exception e) {
+            throw new RuntimeException("Can not locate agent jar file.", e);
         }
-        throw new InvalidClassException("Can not locate agent jar file.");
     }
 }
