@@ -1,6 +1,6 @@
-package com.zhongym.agent.demo.loader;
+package com.zhongym.agent.core.loader;
 
-import com.zhongym.agent.code.enhance.EnhanceAdvisor;
+import com.zhongym.agent.core.enhance.EnhanceAdvisor;
 
 import java.io.File;
 import java.net.URL;
@@ -20,7 +20,7 @@ public class EnhanceAdvisorLoader {
     /**
      * 插件目录，默认从agent.jar所有目录下加载
      */
-    public static List<String> PLUGIN_DIRECTORY = List.of("plugins");
+    public static List<String> PLUGIN_DIRECTORY = List.of("plugins","config");
 
 
     public static Iterable<EnhanceAdvisor> getEnhanceAdvisor() {

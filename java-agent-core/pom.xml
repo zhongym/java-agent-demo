@@ -8,7 +8,7 @@
         <artifactId>java-agent-demo</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>java-agent-code</artifactId>
+    <artifactId>java-agent-core</artifactId>
 
     <dependencies>
         <dependency>

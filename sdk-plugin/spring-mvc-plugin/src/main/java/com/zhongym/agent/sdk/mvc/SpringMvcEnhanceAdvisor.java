@@ -1,8 +1,7 @@
 package com.zhongym.agent.sdk.mvc;
 
-import com.zhongym.agent.code.enhance.EnhanceAdvisor;
-import com.zhongym.agent.code.enhance.MethodInterceptor;
-import lombok.extern.slf4j.Slf4j;
+import com.zhongym.agent.core.enhance.EnhanceAdvisor;
+import com.zhongym.agent.core.enhance.MethodInterceptor;
 import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.description.method.MethodDescription;
 import net.bytebuddy.description.type.TypeDescription;
@@ -15,7 +14,7 @@ import java.util.function.Supplier;
 /**
  * @author zhongym
  */
-@Slf4j
+//@Slf4j
 public class SpringMvcEnhanceAdvisor implements EnhanceAdvisor {
 
     public static final Set<String> ANNOTATIONS = Set.of(

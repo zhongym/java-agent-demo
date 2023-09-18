@@ -11,6 +11,10 @@
 
     <artifactId>java-agent</artifactId>
 
+    <properties>
+        <agent.package.dest.dir>${project.build.directory}/../../out</agent.package.dest.dir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>net.bytebuddy</groupId>
@@ -18,7 +22,7 @@
         </dependency>
         <dependency>
             <groupId>com.zhongym</groupId>
-            <artifactId>java-agent-code</artifactId>
+            <artifactId>java-agent-core</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
@@ -30,7 +34,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <Premain-Class>com.zhongym.agent.demo.AgentMain</Premain-Class>
+                            <Premain-Class>com.zhongym.agent.main.AgentMain</Premain-Class>
                             <Boot-Class-Path>${project.build.finalName}.jar</Boot-Class-Path>
                             <Can-Redefine-Classes>false</Can-Redefine-Classes>
                             <Can-Retransform-Classes>true</Can-Retransform-Classes>
@@ -41,6 +45,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
+                <version>3.1.1</version>
                 <executions>
                     <execution>
                         <id>shade-when-package</id>
@@ -49,6 +54,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <relocations>
                                 <relocation>
                                     <pattern>${shade.net.bytebuddy.source}</pattern>
@@ -58,7 +64,7 @@
                             <artifactSet>
                                 <includes>
                                     <include>net.bytebuddy:byte-buddy</include>
-                                    <include>com.zhongym:java-agent-code</include>
+                                    <include>com.zhongym:java-agent-core</include>
                                 </includes>
                             </artifactSet>
                             <filters>
@@ -69,6 +75,40 @@
                                     </excludes>
                                 </filter>
                             </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <delete dir="${agent.package.dest.dir}"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>package</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <copy file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                      tofile="${agent.package.dest.dir}/${project.artifactId}-${project.version}.jar"
+                                      overwrite="true"/>
+                                <copydir src="${project.basedir}/../config"
+                                         dest="${agent.package.dest.dir}/config" forceoverwrite="true"/>
+                            </target>
                         </configuration>
                     </execution>
                 </executions>

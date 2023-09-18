@@ -11,7 +11,7 @@
 
     <modules>
         <module>java-agent</module>
-        <module>java-agent-code</module>
+        <module>java-agent-core</module>
         <module>sdk-plugin</module>
         <module>examples</module>
     </modules>
