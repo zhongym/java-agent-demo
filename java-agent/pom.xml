@@ -36,7 +36,7 @@
                         <manifestEntries>
                             <Premain-Class>com.zhongym.agent.main.AgentMain</Premain-Class>
                             <Boot-Class-Path>${project.build.finalName}.jar</Boot-Class-Path>
-                            <Can-Redefine-Classes>false</Can-Redefine-Classes>
+                            <Can-Redefine-Classes>true</Can-Redefine-Classes>
                             <Can-Retransform-Classes>true</Can-Retransform-Classes>
                             <Can-Set-Native-Method-Prefix>false</Can-Set-Native-Method-Prefix>
                         </manifestEntries>
@@ -45,16 +45,17 @@
             </plugin>
             <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.1</version>
                 <executions>
                     <execution>
-                        <id>shade-when-package</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <createSourcesJar>true</createSourcesJar>
+                            <shadeSourcesContent>true</shadeSourcesContent>
                             <relocations>
                                 <relocation>
                                     <pattern>${shade.net.bytebuddy.source}</pattern>

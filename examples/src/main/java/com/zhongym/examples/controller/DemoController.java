@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 启动jvm参数：-javaagent:/{工程所有目录}/java-agent-demo/java-agent/target/java-agent-1.0-SNAPSHOT.jar
+ * 启动jvm参数：-javaagent:/{工程所有目录}/out/java-agent-1.0-SNAPSHOT.jar
  *
  * @author zhongym
  */

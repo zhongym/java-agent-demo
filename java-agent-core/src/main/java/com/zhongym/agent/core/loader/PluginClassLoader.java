@@ -51,6 +51,9 @@ public class PluginClassLoader extends URLClassLoader {
         if (DEFAULT_LOADER == null) {
             synchronized (PluginClassLoader.class) {
                 if (DEFAULT_LOADER == null) {
+                    if (parent == null) {
+                        parent = ClassLoader.getSystemClassLoader();
+                    }
                     DEFAULT_LOADER = new PluginClassLoader(parent, pluginPaths);
                 }
             }

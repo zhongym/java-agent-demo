@@ -1,9 +1,10 @@
 package com.zhongym.agent.main;
 
+import com.zhongym.agent.core.PluginBootstrap;
 import com.zhongym.agent.core.enhance.EnhanceAdvisor;
 import com.zhongym.agent.main.impl.DefaultListener;
 import com.zhongym.agent.main.impl.EnhanceAdvisorTransformer;
-import com.zhongym.agent.core.loader.EnhanceAdvisorLoader;
+import com.zhongym.agent.core.enhance.EnhanceAdvisorLoader;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
@@ -30,6 +31,9 @@ public class AgentMain {
     }
 
     private static AgentBuilder enhance(AgentBuilder agentBuilder) {
+        // 初始化
+         PluginBootstrap.initBootstrap();
+
         // 加载类增强定义
         Iterable<EnhanceAdvisor> enhanceAdvisors = EnhanceAdvisorLoader.getEnhanceAdvisor();
         // 添加拦截器
