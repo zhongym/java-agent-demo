@@ -7,9 +7,13 @@ import com.zhongym.agent.main.impl.EnhanceAdvisorTransformer;
 import com.zhongym.agent.core.enhance.EnhanceAdvisorLoader;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.matcher.BooleanMatcher;
 import net.bytebuddy.matcher.ElementMatcher;
 
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
+import java.security.ProtectionDomain;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -19,30 +23,16 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 public class AgentMain {
 
     public static void premain(String arguments, Instrumentation instrumentation) {
-        AgentBuilder agent = new AgentBuilder.Default();
-        // 忽略某些类
-        agent.ignore(ignore());
-        // 增强类
-        agent = enhance(agent);
-        //监听器
-        agent.with(new DefaultListener());
-        //委托给agent
-        agent.installOn(instrumentation);
-    }
-
-    private static AgentBuilder enhance(AgentBuilder agentBuilder) {
-        // 初始化
-         PluginBootstrap.initBootstrap();
-
-        // 加载类增强定义
-        Iterable<EnhanceAdvisor> enhanceAdvisors = EnhanceAdvisorLoader.getEnhanceAdvisor();
-        // 添加拦截器
-        for (EnhanceAdvisor enhanceAdvisor : enhanceAdvisors) {
-            agentBuilder = agentBuilder
-                    .type(enhanceAdvisor.typeMatcher())
-                    .transform(new EnhanceAdvisorTransformer(enhanceAdvisor));
-        }
-        return agentBuilder;
+        new AgentBuilder.Default()
+                // 忽略某些类
+                .ignore(ignore())
+                // 增强类
+                .type(BooleanMatcher.of(true))
+                .transform(new EnhanceAdvisorTransformer())
+                //监听器
+                .with(new DefaultListener())
+                //委托给agent
+                .installOn(instrumentation);
     }
 
     private static ElementMatcher<? super TypeDescription> ignore() {

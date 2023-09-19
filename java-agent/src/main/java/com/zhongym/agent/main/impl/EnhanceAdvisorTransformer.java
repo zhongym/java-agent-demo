@@ -1,6 +1,9 @@
 package com.zhongym.agent.main.impl;
 
+import com.zhongym.agent.core.PluginBootstrap;
 import com.zhongym.agent.core.enhance.EnhanceAdvisor;
+import com.zhongym.agent.core.enhance.EnhanceAdvisorLoader;
+import com.zhongym.agent.core.enhance.MethodInterceptor;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.DynamicType;
@@ -13,14 +16,26 @@ import java.security.ProtectionDomain;
  * @author zhongym
  */
 public class EnhanceAdvisorTransformer implements AgentBuilder.Transformer {
-    private final EnhanceAdvisor enhanceAdvisor;
-    public EnhanceAdvisorTransformer(EnhanceAdvisor enhanceAdvisor) {
-        this.enhanceAdvisor = enhanceAdvisor;
+    private final Iterable<EnhanceAdvisor> enhanceAdvisors;
+
+    public EnhanceAdvisorTransformer() {
+        // 初始化
+        PluginBootstrap.initBootstrap();
+        // 加载
+        enhanceAdvisors = EnhanceAdvisorLoader.getEnhanceAdvisor();
     }
 
     @Override
     public DynamicType.Builder<?> transform(DynamicType.Builder<?> builder, TypeDescription typeDescription, ClassLoader classLoader, JavaModule module, ProtectionDomain protectionDomain) {
-        return builder.method(enhanceAdvisor.methodMatcher())
-                .intercept(MethodDelegation.to(new MethodInterceptorAdapter(enhanceAdvisor.interceptor().get())));
+        for (EnhanceAdvisor advisor : enhanceAdvisors) {
+            if (advisor.typeMatcher().matches(typeDescription)) {
+                MethodInterceptor methodInterceptor = advisor.interceptor().get();
+                builder = builder
+                        .method(advisor.methodMatcher())
+                        .intercept(MethodDelegation
+                                .to(new MethodInterceptorAdapter(methodInterceptor)));
+            }
+        }
+        return builder;
     }
 }
