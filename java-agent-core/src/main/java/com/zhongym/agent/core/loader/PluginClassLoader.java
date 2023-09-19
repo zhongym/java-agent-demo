@@ -37,7 +37,7 @@ public class PluginClassLoader extends URLClassLoader {
     /**
      * The default class loader for the agent.
      */
-    private static PluginClassLoader DEFAULT_LOADER;
+    private static volatile PluginClassLoader DEFAULT_LOADER;
 
 
     public static PluginClassLoader getDefault() {

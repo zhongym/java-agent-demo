@@ -1,19 +1,17 @@
 package com.zhongym.agent.main;
 
-import com.zhongym.agent.core.PluginBootstrap;
 import com.zhongym.agent.core.enhance.EnhanceAdvisor;
+import com.zhongym.agent.core.enhance.EnhanceAdvisorLoader;
 import com.zhongym.agent.main.impl.DefaultListener;
 import com.zhongym.agent.main.impl.EnhanceAdvisorTransformer;
-import com.zhongym.agent.core.enhance.EnhanceAdvisorLoader;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.ClassFileVersion;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.BooleanMatcher;
 import net.bytebuddy.matcher.ElementMatcher;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
-import java.security.ProtectionDomain;
 
 import static net.bytebuddy.matcher.ElementMatchers.*;
 
@@ -23,16 +21,35 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 public class AgentMain {
 
     public static void premain(String arguments, Instrumentation instrumentation) {
-        new AgentBuilder.Default()
+        new AgentBuilder.Default(new ByteBuddy(ClassFileVersion.JAVA_V11))
                 // 忽略某些类
                 .ignore(ignore())
                 // 增强类
-                .type(BooleanMatcher.of(true))
+                .type(type())
                 .transform(new EnhanceAdvisorTransformer())
                 //监听器
                 .with(new DefaultListener())
                 //委托给agent
                 .installOn(instrumentation);
+    }
+
+    private static ElementMatcher<? super TypeDescription> type() {
+        ElementMatcher.Junction<TypeDescription> allMatcher = BooleanMatcher.of(false);
+
+        for (EnhanceAdvisor advisor : EnhanceAdvisorLoader.getEnhanceAdvisor()) {
+            ElementMatcher<? super TypeDescription> matcher = advisor.typeMatcher();
+            allMatcher = allMatcher.or(matcher);
+        }
+
+        ElementMatcher.Junction<TypeDescription> finalAllMatcher = allMatcher;
+        return target -> {
+            try {
+                return finalAllMatcher.matches(target);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
+        };
     }
 
     private static ElementMatcher<? super TypeDescription> ignore() {

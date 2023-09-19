@@ -19,8 +19,6 @@ public class EnhanceAdvisorTransformer implements AgentBuilder.Transformer {
     private final Iterable<EnhanceAdvisor> enhanceAdvisors;
 
     public EnhanceAdvisorTransformer() {
-        // 初始化
-        PluginBootstrap.initBootstrap();
         // 加载
         enhanceAdvisors = EnhanceAdvisorLoader.getEnhanceAdvisor();
     }

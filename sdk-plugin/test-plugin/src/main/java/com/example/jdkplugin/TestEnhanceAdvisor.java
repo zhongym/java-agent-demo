@@ -12,19 +12,21 @@ import java.util.function.Supplier;
 /**
  * @author zhongym
  */
-public class JdkThreadPoolEnhanceAdvisor implements EnhanceAdvisor {
+public class TestEnhanceAdvisor implements EnhanceAdvisor {
     @Override
     public ElementMatcher<? super TypeDescription> typeMatcher() {
-        return ElementMatchers.named("java.util.concurrent.ThreadPoolExecutor");
+        return ElementMatchers.named("com.zhongym.examples.Test");
     }
 
     @Override
     public ElementMatcher<? super MethodDescription> methodMatcher() {
-       return ElementMatchers.namedOneOf("submit","execute");
+       return m-> {
+          return  "say".equals(m.getActualName());
+       };
     }
 
     @Override
     public Supplier<MethodInterceptor> interceptor() {
-        return JdkThreadPoolMethodInterceptor::new;
+        return TestMethodInterceptor::new;
     }
 }

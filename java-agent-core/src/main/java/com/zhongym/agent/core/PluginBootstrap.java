@@ -37,7 +37,6 @@ public class PluginBootstrap {
     public static void initBootstrap() {
         // 初始化agent目录
         String agentPath = getAgentPath();
-        System.out.println("=====================agentPath:" + agentPath);
 
         // 初始化配置文件
         ConfigLoader.iniConfig();

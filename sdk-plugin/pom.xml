@@ -14,7 +14,7 @@
 
     <modules>
         <module>spring-mvc-plugin</module>
-        <module>jdk-plugin</module>
+        <module>test-plugin</module>
     </modules>
 
     <properties>
