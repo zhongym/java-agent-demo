@@ -1,1 +1,3 @@
 com.example.jdkplugin.TestEnhanceAdvisor
+com.example.jdkplugin.ThreadLocalEnhanceAdvisor
+com.example.jdkplugin.ThreadPoolExecutorEnhanceAdvisor

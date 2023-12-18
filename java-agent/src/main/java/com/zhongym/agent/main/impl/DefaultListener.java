@@ -17,6 +17,7 @@ public class DefaultListener implements AgentBuilder.Listener {
 
     @Override
     public void onTransformation(TypeDescription typeDescription, ClassLoader classLoader, JavaModule module, boolean loaded, DynamicType dynamicType) {
+        System.out.println("transform:" + typeDescription.getActualName());
     }
 
     @Override
@@ -25,7 +26,8 @@ public class DefaultListener implements AgentBuilder.Listener {
 
     @Override
     public void onError(String typeName, ClassLoader classLoader, JavaModule module, boolean loaded, Throwable throwable) {
-
+         System.out.println("onError:" + typeName);
+         throwable.printStackTrace();
     }
 
     @Override
